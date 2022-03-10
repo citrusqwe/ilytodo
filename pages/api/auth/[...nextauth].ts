@@ -18,6 +18,13 @@ export default NextAuth({
   ],
   theme: {
     colorScheme: 'light',
+    brandColor: '#646464',
+    logo: 'https://firebasestorage.googleapis.com/v0/b/ily-todo-ec6bb.appspot.com/o/791bf89189164007bdfadca55c23dd2a.png?alt=media&token=aa5e4587-25d0-4654-92b5-d6a3aaf21bc3',
   },
-  callbacks: {},
+  callbacks: {
+    async session({ session, token, user }) {
+      session.id = user.id;
+      return session;
+    },
+  },
 });

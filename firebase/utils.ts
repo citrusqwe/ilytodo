@@ -3,7 +3,6 @@ import {
   FieldValue,
   QuerySnapshot,
 } from '@firebase/firestore';
-import moment from 'moment';
 
 export function docSnapshotToObject(snapshot: DocumentSnapshot) {
   if (!snapshot.exists) {
@@ -15,8 +14,7 @@ export function docSnapshotToObject(snapshot: DocumentSnapshot) {
     data.expires = data.expires.toDate();
   }
 
-  if (data.timestamp)
-    data.timestamp = moment(data.timestamp.seconds * 1000).format('MMM Do YY');
+  if (data.timestamp) data.timestamp = data.timestamp.seconds * 1000;
   return { id: snapshot.id, ...data };
 }
 
@@ -30,8 +28,7 @@ export function querySnapshotToObject(snapshot: QuerySnapshot) {
   if (data.expires) {
     data.expires = data.expires.toDate();
   }
-  if (data.timestamp)
-    data.timestamp = moment(data.timestamp.seconds * 1000).format('MMM Do YY');
+  if (data.timestamp) data.timestamp = data.timestamp.seconds * 1000;
 
   return { id: doc.id, ...data };
 }
@@ -47,9 +44,7 @@ export function querySnapshotsToObject(snapshot: any) {
     return {
       ...task,
       id: snap.id,
-      timestamp: task.timestamp
-        ? moment(task.timestamp.seconds * 1000).format('MMM Do YY')
-        : null,
+      timestamp: task.timestamp ? task.timestamp.seconds * 1000 : null,
     };
   });
 

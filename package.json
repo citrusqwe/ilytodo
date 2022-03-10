@@ -21,7 +21,8 @@
     "react-hook-form": "^7.27.0",
     "react-icons": "^4.3.1",
     "react-loading-skeleton": "^3.0.3",
-    "react-modal": "^3.14.4"
+    "react-modal": "^3.14.4",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@types/node": "17.0.18",

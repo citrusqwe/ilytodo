@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Field, Form, Formik } from 'formik';
 import { Project } from './Layout';
-import { fb } from '../firebase/functions';
+import ColorPickerInput from './ColorPickerInput';
+import { ProjectSchema } from '../schemas';
 
 export type Color = {
   id: string;
@@ -13,30 +14,17 @@ interface CreateProjectModalProps {
   currentProject?: Project;
   setModalClose: React.Dispatch<React.SetStateAction<boolean>>;
   isEdit?: boolean;
-  user: any;
+  handleProjectUpdate?: any;
+  handleProjectCreation?: any;
 }
 
 const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   currentProject,
   setModalClose,
   isEdit,
-  user,
+  handleProjectCreation,
+  handleProjectUpdate,
 }) => {
-  const [colors, setColors] = useState([]);
-
-  const getColors = async () => {
-    try {
-      const colors = await fb().getColors();
-      setColors(colors);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getColors();
-  }, []);
-
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-6">
@@ -47,68 +35,59 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       <Formik
         initialValues={{
           name: currentProject?.name ? currentProject?.name : '',
-          color: currentProject?.color ? currentProject?.color : '',
+          color: currentProject?.color ? currentProject?.color : '#000000',
         }}
+        validationSchema={ProjectSchema}
         onSubmit={async (values) => {
           try {
             if (isEdit) {
+              await handleProjectUpdate(values);
             } else {
-              console.log(values);
-              const createdProject = await fb().createProject(values, user);
+              await handleProjectCreation(values);
             }
           } catch (error) {
             console.log(error);
           }
         }}
       >
-        <Form className="flex flex-col">
-          <div className="flex flex-col mb-4">
-            <label htmlFor="name" className="mb-1">
-              Name
-            </label>
-            <Field
-              id="firstName"
-              name="name"
-              className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black"
-            />
-          </div>
-
-          <div className="flex flex-col mb-4">
-            <label htmlFor="color" className="mb-1">
-              Color
-            </label>
-            <Field
-              id="lastName"
-              name="color"
-              className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black"
-              as="select"
-            >
-              {colors?.map((color: Color) => (
-                <option key={color.id} value={color.value}>
-                  {color.label}
-                </option>
-              ))}
-            </Field>
-          </div>
-          <div className="self-end">
-            <button
-              className="border border-gray-300 rounded-md p-2 mb-2 outline-none mr-4 transtition duration-300 hover:border-black focus:border-black"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setModalClose(false);
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="border border-gray-300 rounded-md p-2 mb-2 outline-none transtition duration-300 hover:border-black focus:border-black"
-            >
-              Create
-            </button>
-          </div>
-        </Form>
+        {({ errors, touched, isSubmitting, isValid }) => (
+          <Form className="flex flex-col">
+            <div className="flex flex-col mb-4">
+              <label htmlFor="name" className="mb-1">
+                Name
+              </label>
+              <Field
+                id="firstName"
+                name="name"
+                className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black"
+              />
+              {errors.name && touched.name ? (
+                <span className="text-red-500">{errors.name}</span>
+              ) : null}
+            </div>
+            <ColorPickerInput />
+            <div className="self-end">
+              <button
+                className="border border-gray-300 rounded-md p-2 mb-2 outline-none mr-4 transtition duration-300 disabled:text-gray-300 hover:border-black focus:border-black"
+                type="button"
+                disabled={isSubmitting}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setModalClose(false);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="border border-gray-300 rounded-md p-2 mb-2 outline-none transtition duration-300 disabled:text-gray-300 hover:border-black focus:border-black"
+                disabled={isSubmitting || !isValid}
+              >
+                {!isEdit ? 'Create' : 'Update'}
+              </button>
+            </div>
+          </Form>
+        )}
       </Formik>
     </div>
   );

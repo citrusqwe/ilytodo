@@ -1,6 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NextPage, NextPageContext } from 'next';
-import { AiOutlineDelete, AiOutlineEdit, AiOutlinePlus } from 'react-icons/ai';
+import {
+  AiOutlineCloseCircle,
+  AiOutlineDelete,
+  AiOutlineEdit,
+  AiOutlinePlus,
+} from 'react-icons/ai';
 import { fb } from '../../firebase/functions';
 import Task from '../../components/Task';
 import { BiDotsHorizontalRounded } from 'react-icons/bi';
@@ -10,17 +15,24 @@ import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 import Modal from 'react-modal';
 import { Field, Form, Formik } from 'formik';
 import CreateProjectModal from '../../components/CreateProjectModal';
+import Head from 'next/head';
+import { Project } from '../../components/Layout';
+import { useRouter } from 'next/router';
+import { getSession } from 'next-auth/react';
+import { TaskSchema } from '../../schemas';
+import StartSvg from '../../public/start_project.svg';
+import Image from 'next/image';
 
 export type Task = {
   completed: boolean;
-  timestamp: string;
+  timestamp: number;
   text: string;
   projectId: string;
   id: string;
 };
 
 interface ProjectProps {
-  currentProject: {
+  project: {
     id: string;
     name: string;
     color: string;
@@ -30,12 +42,22 @@ interface ProjectProps {
 
 Modal.setAppElement('#__next');
 
-const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
-  const [inputOpen, setInputOpen] = useState(false);
+const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [showCompletedTask, setShowCompletedTask] = useState(false);
+  const [currentProject, setCurrentProject] = useState(project);
+  const [tasksList, setTasksList] = useState<Task[]>(tasks);
+
   const projectMenuRef = useRef(null);
   useOutsideClick(projectMenuRef, () => setProjectMenuOpen(false));
+  const router = useRouter();
+
+  useEffect(() => {
+    setCurrentProject(project);
+    setTasksList(tasks);
+  }, [project]);
 
   const createTask = async (data: any) => {
     const task = {
@@ -46,7 +68,18 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
 
     try {
       const createdTask = await fb().createTask(task);
-      setInputOpen(false);
+      setTasksList([createdTask, ...tasksList]);
+      setCreateTaskOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateProject = async (data: any) => {
+    try {
+      const updatedProject = await fb().updateProject(currentProject, data);
+      setCurrentProject({ ...updatedProject, ...data });
+      setProjectModalOpen(false);
     } catch (error) {
       console.log(error);
     }
@@ -54,20 +87,55 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
 
   const deleteProject = async () => {
     try {
+      router.push('/overview');
       const deletedProject = await fb().deleteProject(currentProject);
-      console.log('project deleted', deletedProject);
     } catch (error) {
       console.log(error);
     }
   };
 
+  const deleteTask = async (task: any) => {
+    try {
+      const deletedTask = await fb().deleteTask(task);
+      const updatedTaskList = tasksList.filter((t) => t.id !== deletedTask.id);
+      setTasksList(updatedTaskList);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateTask = async (task: Task, data: any) => {
+    try {
+      const updatedTask = await fb().updateTask(task, data);
+      tasksList.splice(tasksList.indexOf(task), 1, {
+        ...updatedTask,
+        ...data,
+      });
+      setTasksList([...tasksList]);
+    } catch (error) {
+      console.log('update error', error);
+    }
+  };
+
+  useEffect(() => {
+    const filteredTasks = tasks?.filter((t) =>
+      showCompletedTask ? t : t.completed === false
+    );
+    setTasksList(filteredTasks);
+  }, [showCompletedTask]);
+
   if (!currentProject) return <div>Error happend</div>;
 
   return (
     <div>
+      <Head>
+        <title>{currentProject?.name}</title>
+      </Head>
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-2xl capitalize">{currentProject?.name}</h3>
-        <div className="relative" ref={projectMenuRef}>
+        <h3 className="text-2xl capitalize break-words max-w-[600px]">
+          {currentProject?.name}
+        </h3>
+        <div className="relative self-start" ref={projectMenuRef}>
           <button
             className="p-1"
             onClick={() => setProjectMenuOpen(!projectMenuOpen)}
@@ -84,7 +152,7 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                className="absolute w-[320px] right-0 py-2 border border-gray-300 rounded-md"
+                className="absolute z-[2000] bg-white w-[320px] right-0 py-2 border border-gray-300 rounded-md"
               >
                 <div
                   className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
@@ -95,11 +163,25 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
                   </span>
                   Edit project
                 </div>
-                <div className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300">
-                  <span className="mr-2">
-                    <IoCheckmarkCircleOutline />
-                  </span>
-                  Show completed tasks
+                <div
+                  className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
+                  onClick={() => setShowCompletedTask(!showCompletedTask)}
+                >
+                  {showCompletedTask ? (
+                    <>
+                      <span className="mr-2">
+                        <AiOutlineCloseCircle />
+                      </span>
+                      Hide completed tasks
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">
+                        <IoCheckmarkCircleOutline />
+                      </span>
+                      Show completed task
+                    </>
+                  )}
                 </div>
                 <div
                   className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
@@ -115,56 +197,81 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
           )}
         </div>
       </div>
-      <div className="mb-8">
-        {tasks?.map((task) => (
-          <Task key={task.id} task={task} />
+      <div className="mb-8 overflow-auto max-h-80 scroll">
+        {tasksList?.map((task) => (
+          <Task
+            key={task.id}
+            task={task}
+            deleteTask={deleteTask}
+            updateTask={updateTask}
+          />
         ))}
       </div>
-      <button
-        className="flex items-center transition duration-300 mb-4 hover:text-black"
-        onClick={() => setInputOpen(!inputOpen)}
-      >
-        <span className="mr-2">
-          <AiOutlinePlus />
-        </span>
-        Add task
-      </button>
-      {inputOpen && (
+      {createTaskOpen ? (
         <div className="mt-4 w-1/2">
           <Formik
             initialValues={{
-              firstName: '',
-              lastName: '',
-              email: '',
+              text: '',
             }}
+            validationSchema={TaskSchema}
             onSubmit={(values) => createTask(values)}
           >
-            <Form className="flex flex-col">
-              <Field
-                name="text"
-                as="textarea"
-                className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black resize-none"
-                placeholder="Type something"
-              />
-              <div className="flex">
-                <button
-                  type="submit"
-                  className="mr-2 p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black focus:border-black"
-                >
-                  Add task
-                </button>
-                <button
-                  className=" p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black focus:border-black"
-                  onClick={() => setInputOpen(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </Form>
+            {({ errors, touched, isSubmitting }) => (
+              <Form className="flex flex-col">
+                <Field
+                  name="text"
+                  as="textarea"
+                  className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black resize-none"
+                  placeholder="Type something"
+                />
+                {errors.text && touched.text ? (
+                  <span className="text-red-500">{errors.text}</span>
+                ) : null}
+                <div className="flex">
+                  <button
+                    type="submit"
+                    className="mr-2 p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black"
+                    disabled={isSubmitting}
+                  >
+                    Add task
+                  </button>
+                  <button
+                    className=" p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black"
+                    onClick={() => setCreateTaskOpen(false)}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </Form>
+            )}
           </Formik>
         </div>
+      ) : (
+        <button
+          className="flex items-center transition duration-300 mb-4 hover:text-black"
+          onClick={() => setCreateTaskOpen(!createTaskOpen)}
+        >
+          <span className="mr-2">
+            <AiOutlinePlus />
+          </span>
+          Add task
+        </button>
       )}
-
+      {tasksList.length < 1 && (
+        <div className="mt-4">
+          <Image
+            src={StartSvg.src}
+            width={StartSvg.width}
+            height={160}
+            alt="Start image"
+          />
+          <div className="text-center">
+            <span className="block  mt-8">Organize your tasks</span>
+            <span>Add a new one!</span>
+          </div>
+        </div>
+      )}
       <Modal
         isOpen={projectModalOpen}
         onRequestClose={() => setProjectModalOpen(false)}
@@ -174,6 +281,7 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
         <CreateProjectModal
           currentProject={currentProject}
           setModalClose={setProjectModalOpen}
+          handleProjectUpdate={updateProject}
           isEdit
         />
       </Modal>
@@ -183,14 +291,26 @@ const Project: NextPage<ProjectProps> = ({ currentProject, tasks }) => {
 
 export async function getServerSideProps(ctx: NextPageContext) {
   try {
+    const user = await getSession(ctx);
     const projectId = ctx.query.id as string;
-    const currentProject = await fb().getProject(projectId);
+    const project = await fb().getProject(projectId);
     const tasks = await fb().getProjectTasks(projectId);
 
-    return {
-      props: { currentProject, tasks },
-    };
+    if (user?.id !== project.userId) {
+      return {
+        props: {},
+        redirect: {
+          destination: '/overview',
+          permanent: false,
+        },
+      };
+    } else {
+      return {
+        props: { project, tasks },
+      };
+    }
   } catch (error) {
+    console.log(error);
     return {
       props: {},
     };

@@ -1,4 +1,4 @@
-import React, { ReactElement, useRef, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GrHomeRounded } from 'react-icons/gr';
 import { IoChevronDownOutline } from 'react-icons/io5';
@@ -12,6 +12,8 @@ import CreateProjectModal from './CreateProjectModal';
 import Modal from 'react-modal';
 import Link from 'next/link';
 import useOutsideClick from '../hooks/useOutsideClick';
+import { fb } from '../firebase/functions';
+import { useRouter } from 'next/router';
 
 Modal.setAppElement('#__next');
 
@@ -30,17 +32,37 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
   const { data: session, status } = useSession();
   const isLoading = status === 'loading';
+
+  const [projectsList, setProjectsList] = useState(projects);
   const [projectsListOpen, setProjectsListOpen] = useState(true);
   const [сreateProjectModalOpen, setCreateProjectModalOpen] = useState(false);
   const [userPopupOpen, setUserPopupOpen] = useState(false);
+
   const userPopupRef = useRef(null);
+
   useOutsideClick(userPopupRef, () => setUserPopupOpen(false));
+  const router = useRouter();
+
+  const handleProjectCreation = async (values: any) => {
+    try {
+      const createdProject = await fb().createProject(values, user);
+      setProjectsList([...projectsList, createdProject as Project]);
+      router.push(`/project/${createdProject?.id}`);
+      setCreateProjectModalOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const unsub = fb().getAllProjectsRealtime(user, setProjectsList);
+  }, []);
 
   return (
-    <div className="bg-slate-200 w-full h-screen p-24">
-      <div className="bg-white w-full h-full rounded-2xl shadow-md flex py-10 px-10">
+    <div className="bg-slate-200 w-full h-screen p-12">
+      <div className="bg-white w-full h-full rounded-xl shadow-md flex py-10 px-10">
         <div className="w-1/4 h-full border-r border-gray-200  pr-4 group">
-          <div className="mb-10">Logo</div>
+          <div className="mb-8 font-medium text-xl">Ilytodo</div>
           <div>
             <ul>
               <SidebarLink
@@ -85,10 +107,11 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                     }}
                     transition={{
                       duration: 0.8,
-                      ease: [0.24, 0.62, 0.23, 0.68],
+                      ease: [0.04, 0.62, 0.23, 0.98],
                     }}
+                    className="overflow-auto scroll max-h-[412px]"
                   >
-                    {projects?.map((project: Project) => (
+                    {projectsList?.map((project: Project) => (
                       <SidebarLink
                         key={project.id}
                         name={project.name}
@@ -99,6 +122,7 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                           />
                         }
                         id={project.id}
+                        currentId={router.query.id}
                         isProject
                       />
                     ))}
@@ -122,19 +146,22 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                 className="outline-none px-2 py-1 border border-transparent rounded-lg transition duration-300 hover:border-gray-theme focus:border-gray-theme"
               />
             </div>
-            {!isLoading && session ? (
+
+            {session && !isLoading ? (
               <div className="relative" ref={userPopupRef}>
                 <div
                   className="flex items-center"
                   onClick={() => setUserPopupOpen(!userPopupOpen)}
                 >
                   <div className="flex items-center mr-6">
-                    {session?.user?.name
-                      ? session?.user?.name
-                      : session?.user?.email}
-                    <span className="ml-2">
-                      <IoChevronDownOutline />
-                    </span>
+                    <div className="flex items-center">
+                      {session?.user?.name
+                        ? session?.user?.name
+                        : session?.user?.email}
+                      <span className="ml-2">
+                        <IoChevronDownOutline />
+                      </span>
+                    </div>
                   </div>
                   <Image
                     src={session?.user?.image as string}
@@ -142,22 +169,25 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                     width="45px"
                     height="45px"
                     className="rounded-full"
-                  ></Image>
+                  />
                 </div>
                 {userPopupOpen && (
                   <AnimatePresence>
                     <motion.div
-                      className="absolute left-0 top-10 border border-gray-300 rounded-md py-2 flex flex-col"
+                      className="overflow-hidden absolute left-0 top-10 border border-gray-300 rounded-md py-2 flex flex-col"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
                       <div className="py-1 px-4 transtion duration-300 hover:bg-gray-300">
-                        {user?.name}
+                        {user?.name ? user?.name : user?.email}
                       </div>
                       <button
                         className="py-1 px-4 transtion duration-300 hover:bg-gray-300"
-                        onClick={() => signOut}
+                        onClick={() => {
+                          router.push('/overview');
+                          signOut();
+                        }}
                       >
                         Sign out
                       </button>
@@ -166,6 +196,16 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                 )}
               </div>
             ) : (
+              <div className="flex items-center">
+                <Skeleton width={100} className="mr-4" />
+                <Skeleton
+                  circle
+                  height="100%"
+                  containerClassName="w-[45px] h-[45px] leading-[1]"
+                />
+              </div>
+            )}
+            {!isLoading && !session && (
               <Link href="/api/auth/signin">
                 <a className="px-4 py-1 border border-gray-300 transition duration-300 rounded-md hover:border-black">
                   Login
@@ -184,7 +224,7 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
       >
         <CreateProjectModal
           setModalClose={setCreateProjectModalOpen}
-          user={user}
+          handleProjectCreation={handleProjectCreation}
         />
       </Modal>
     </div>

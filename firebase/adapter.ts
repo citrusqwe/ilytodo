@@ -1,11 +1,5 @@
-import { createHash, randomBytes } from 'crypto';
-import type { Account, Profile, Session, User } from 'next-auth';
-import type {
-  Adapter,
-  AdapterSession,
-  AdapterUser,
-  VerificationToken,
-} from 'next-auth/adapters';
+import type { Profile, Session, User } from 'next-auth';
+import type { Adapter } from 'next-auth/adapters';
 import {
   addDoc,
   collection,
@@ -26,13 +20,6 @@ import {
   stripUndefined,
 } from './utils';
 
-interface FirebaseVerificationRequest {
-  id: string;
-  identifier: string;
-  token: string;
-  expires: Date;
-}
-
 export type FirebaseSession = Session & {
   id: string;
   expires: Date;
@@ -45,20 +32,10 @@ export const FirebaseAdapter: Adapter<
   User & { id: string },
   Profile,
   FirebaseSession
-> = (client: Firestore, options = {}) => {
-  // return {
-  // async getAdapter({ session, secret, ...appOptions }) {
-  //   const sessionMaxAge = session.maxAge * 1000; // default is 30 days
-  //   const sessionUpdateAge = session.updateAge * 1000; // default is 1 day
-
-  //   const hashToken = (token: string) =>
-  //     createHash('sha256')
-  //       .update(`${token}${secret as string}`)
-  //       .digest('hex');
-
+> = (client: Firestore) => {
   return {
     displayName: 'FIREBASE',
-    async createUser(user) {
+    async createUser(user: any) {
       const collectionRef = collection(client, 'users');
       const docRef = doc(collectionRef);
       await setDoc(docRef, {
@@ -72,12 +49,12 @@ export const FirebaseAdapter: Adapter<
       return createdUser.data();
     },
 
-    async getUser(id) {
+    async getUser(id: any) {
       const user = await getDoc(doc(client, 'users', id));
       return docSnapshotToObject(user);
     },
 
-    async getUserByEmail(email) {
+    async getUserByEmail(email: any) {
       if (!email) return null;
 
       const q = query(collection(client, 'users'), where('email', '==', email));
@@ -85,7 +62,7 @@ export const FirebaseAdapter: Adapter<
       return querySnapshotToObject(user);
     },
 
-    async getUserByAccount({ provider, providerAccountId }) {
+    async getUserByAccount({ provider, providerAccountId }: any) {
       const q = query(
         collection(client, 'accounts'),
         where('provider', '==', provider),
@@ -98,21 +75,20 @@ export const FirebaseAdapter: Adapter<
 
       const userSnapshot = await getDoc(doc(client, 'users', userId));
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       return { ...userSnapshot.data(), id: userSnapshot.id } as any;
     },
 
-    async updateUser(user) {
+    async updateUser(user: any) {
       await updateDoc(doc(client, 'users', user.id), stripUndefined(user));
 
       return user;
     },
 
-    async deleteUser(userId) {
+    async deleteUser(userId: any) {
       await deleteDoc(doc(client, 'users', userId));
     },
 
-    async linkAccount(account) {
+    async linkAccount(account: any) {
       const accountRef = await addDoc(
         collection(client, 'accounts'),
         stripUndefined(account)
@@ -123,7 +99,7 @@ export const FirebaseAdapter: Adapter<
       return docSnapshotToObject(accountSnap);
     },
 
-    async unlinkAccount({ providerAccountId, provider }) {
+    async unlinkAccount({ providerAccountId, provider }: any) {
       const q = query(
         collection(client, 'accounts'),
         where('provider', '==', provider),
@@ -136,13 +112,13 @@ export const FirebaseAdapter: Adapter<
       await deleteDoc(doc(client, 'accounts', accountId));
     },
 
-    async createSession(data) {
+    async createSession(data: any) {
       const sessionRef = await addDoc(collection(client, 'sessions'), data);
       const sessionSnap = await getDoc(sessionRef);
       return docSnapshotToObject(sessionSnap);
     },
 
-    async getSessionAndUser(sessionToken) {
+    async getSessionAndUser(sessionToken: any) {
       const q = query(
         collection(client, 'sessions'),
         where('sessionToken', '==', sessionToken),
@@ -166,11 +142,11 @@ export const FirebaseAdapter: Adapter<
       return { session: session, user: user };
     },
 
-    async updateSession(data) {
+    async updateSession(data: any) {
       // if (
       //   !force &&
       //   Number(session.expires) - sessionMaxAge + sessionUpdateAge > Date.now()
-      // ) {
+      // :any) {
       //   return null;
       // }
       const q = query(
@@ -186,7 +162,7 @@ export const FirebaseAdapter: Adapter<
       return data;
     },
 
-    async deleteSession(sessionToken) {
+    async deleteSession(sessionToken: any) {
       const q = query(
         collection(client, 'sessions'),
         where('sessionToken', '==', sessionToken),
@@ -200,7 +176,7 @@ export const FirebaseAdapter: Adapter<
       await deleteDoc(doc(client, 'sessions', session.id));
     },
 
-    async createVerificationToken(data) {
+    async createVerificationToken(data: any) {
       const verificationRequestRef = await addDoc(
         collection(client, 'verificationTokens'),
         {
@@ -213,7 +189,7 @@ export const FirebaseAdapter: Adapter<
       return docSnapshotToObject(snapshot);
     },
 
-    // async getVerificationRequest(identifier, token) {
+    // async getVerificationRequest(identifier, token:any) {
     //   const q = query(
     //     collection(client, 'verificationTokens'),
     //     where('token', '==', hashToken(token)),
@@ -225,7 +201,7 @@ export const FirebaseAdapter: Adapter<
     //   const verificationRequest = querySnapshotToObject(snapshot);
     //   if (!verificationRequest) return null;
 
-    //   if (verificationRequest.expires < new Date()) {
+    //   if (verificationRequest.expires < new Date():any) {
     //     await deleteDoc(
     //       doc(client, 'verificationTokens', verificationRequest.id)
     //     );
@@ -235,7 +211,7 @@ export const FirebaseAdapter: Adapter<
     //   return verificationRequest;
     // },
 
-    async useVerificationToken({ identifier, token }) {
+    async useVerificationToken({ identifier, token }: any) {
       const q = query(
         collection(client, 'verificationTokens'),
         where('token', '==', token),

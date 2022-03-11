@@ -259,7 +259,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
         </button>
       )}
       {tasksList.length < 1 && (
-        <div className="mt-4">
+        <div className="text-center mt-4">
           <Image
             src={StartSvg.src}
             width={StartSvg.width}

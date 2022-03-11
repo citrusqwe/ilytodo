@@ -15,6 +15,7 @@ const Overview = () => {
           width={OverviewSvg.width}
           height={200}
           className="mb-2"
+          alt="Preview image"
         />
         <h2 className="text-gray-600">Start by creating a new project!</h2>
         <h2 className="text-gray-600">

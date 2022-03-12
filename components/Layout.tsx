@@ -1,8 +1,8 @@
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { GrHomeRounded } from 'react-icons/gr';
 import { IoChevronDownOutline } from 'react-icons/io5';
-import { AiOutlinePlus, AiOutlineSearch } from 'react-icons/ai';
+import { AiOutlineHome, AiOutlinePlus, AiOutlineSearch } from 'react-icons/ai';
+import { MdOutlineDarkMode, MdOutlineLightMode } from 'react-icons/md';
 import SidebarLink from '../components/SidebarLink';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
@@ -14,6 +14,8 @@ import Link from 'next/link';
 import useOutsideClick from '../hooks/useOutsideClick';
 import { fb } from '../firebase/functions';
 import { useRouter } from 'next/router';
+import AnimatedPopup from './AnimatedPopup';
+import useDarkMode from '../hooks/useDarkMode';
 
 Modal.setAppElement('#__next');
 
@@ -36,11 +38,17 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
   const [projectsList, setProjectsList] = useState(projects);
   const [projectsListOpen, setProjectsListOpen] = useState(true);
   const [сreateProjectModalOpen, setCreateProjectModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [userPopupOpen, setUserPopupOpen] = useState(false);
+  const [theme, setTheme] = useState('light');
+  const [themePopupOpen, setThemePopupOpen] = useState(false);
 
   const userPopupRef = useRef(null);
+  const themePopupRef = useRef(null);
 
   useOutsideClick(userPopupRef, () => setUserPopupOpen(false));
+  useOutsideClick(themePopupRef, () => setThemePopupOpen(false));
+  useDarkMode(theme, setTheme);
   const router = useRouter();
 
   const handleProjectCreation = async (values: any) => {
@@ -54,20 +62,27 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
     }
   };
 
+  const handleTheme = (theme: string) => {
+    setTheme(theme);
+    setThemePopupOpen(false);
+  };
+
   useEffect(() => {
     const unsub = fb().getAllProjectsRealtime(user, setProjectsList);
   }, []);
 
   return (
-    <div className="bg-slate-200 w-full h-screen p-12">
-      <div className="bg-white w-full h-full rounded-xl shadow-md flex py-10 px-10">
-        <div className="w-1/4 h-full border-r border-gray-200  pr-4 group">
+    <div className="bg-slate-200 transition duration-200 dark:bg-slate-900  dark:text-white w-full h-screen p-12">
+      <div className="bg-white transition duration-200 dark:bg-gray-800 w-full h-full rounded-xl shadow-md flex py-10 px-10">
+        <div className="w-1/4 h-full border-r border-gray-200 dark:border-gray-600  pr-4 group">
           <div className="mb-8 font-medium text-xl">Ilytodo</div>
           <div>
             <ul>
               <SidebarLink
                 name={'Overview'}
-                icon={<GrHomeRounded className="stroke-gray-theme" />}
+                icon={
+                  <AiOutlineHome className="stroke-gray-theme dark:stroke-white" />
+                }
                 margin
               />
             </ul>
@@ -85,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                 </span>
                 Projects
                 <span
-                  className="ml-auto p-2 cursor-pointer rounded-md transition duration-300 opacity-0 hover:bg-gray-300 group-hover:opacity-100"
+                  className="ml-auto p-2 cursor-pointer rounded-md transition duration-300 opacity-0 hover:bg-gray-300 group-hover:opacity-100 dark:hover:bg-gray-600"
                   onClick={(e) => {
                     e.stopPropagation();
                     setCreateProjectModalOpen(true);
@@ -109,7 +124,7 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                       duration: 0.8,
                       ease: [0.04, 0.62, 0.23, 0.98],
                     }}
-                    className="overflow-auto scroll max-h-[412px]"
+                    className="overflow-auto pr-2 scroll dark:scroll-dark max-h-[412px]"
                   >
                     {projectsList?.map((project: Project) => (
                       <SidebarLink
@@ -143,57 +158,86 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                 placeholder="Search"
                 name=""
                 id=""
-                className="outline-none px-2 py-1 border border-transparent rounded-lg transition duration-300 hover:border-gray-theme focus:border-gray-theme"
+                className="outline-none px-2 dark:bg-gray-600 py-1 border border-transparent rounded-lg transition duration-300 hover:border-gray-theme focus:border-gray-theme"
               />
             </div>
 
             {session && !isLoading ? (
-              <div className="relative" ref={userPopupRef}>
-                <div
-                  className="flex items-center"
-                  onClick={() => setUserPopupOpen(!userPopupOpen)}
-                >
-                  <div className="flex items-center mr-6">
-                    <div className="flex items-center">
-                      {session?.user?.name
-                        ? session?.user?.name
-                        : session?.user?.email}
-                      <span className="ml-2">
-                        <IoChevronDownOutline />
-                      </span>
-                    </div>
-                  </div>
-                  <Image
-                    src={session?.user?.image as string}
-                    alt={'img'}
-                    width="45px"
-                    height="45px"
-                    className="rounded-full"
-                  />
-                </div>
-                {userPopupOpen && (
-                  <AnimatePresence>
-                    <motion.div
-                      className="overflow-hidden absolute left-0 top-10 border border-gray-300 rounded-md py-2 flex flex-col"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <div className="py-1 px-4 transtion duration-300 hover:bg-gray-300">
-                        {user?.name ? user?.name : user?.email}
-                      </div>
-                      <button
-                        className="py-1 px-4 transtion duration-300 hover:bg-gray-300"
-                        onClick={() => {
-                          router.push('/overview');
-                          signOut();
-                        }}
+              <div className="flex items-center">
+                <div className="mr-6 relative" ref={themePopupRef}>
+                  <button
+                    className="p-2"
+                    onClick={() => setThemePopupOpen(!themePopupOpen)}
+                  >
+                    {theme === 'light' ? (
+                      <MdOutlineLightMode className="w-[19px] h-[19px] fill-sky-500" />
+                    ) : (
+                      <MdOutlineDarkMode className="w-[19px] h-[19px] fill-sky-500" />
+                    )}
+                  </button>
+                  {themePopupOpen && (
+                    <AnimatedPopup isHeader>
+                      <li
+                        className={`flex items-center py-1 px-4 dark:text-white w-full transtion duration-300 ${
+                          theme === 'light' ? 'text-sky-400' : ''
+                        } hover:bg-gray-300 dark:hover:bg-gray-600`}
+                        onClick={() => handleTheme('light')}
                       >
-                        Sign out
-                      </button>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
+                        <MdOutlineDarkMode className="mr-2" />
+                        Light
+                      </li>
+                      <li
+                        className={`flex items-center py-1 px-4  w-full transtion duration-300 ${
+                          theme === 'dark' ? 'text-sky-400' : ''
+                        } hover:bg-gray-300 dark:hover:bg-gray-600`}
+                        onClick={() => handleTheme('dark')}
+                      >
+                        <MdOutlineLightMode className="mr-2" />
+                        Dark
+                      </li>
+                    </AnimatedPopup>
+                  )}
+                </div>
+                <div className="relative" ref={userPopupRef}>
+                  <div
+                    className="flex items-center"
+                    onClick={() => setUserPopupOpen(!userPopupOpen)}
+                  >
+                    <Image
+                      src={session?.user?.image as string}
+                      alt={'img'}
+                      width="45px"
+                      height="45px"
+                      className="rounded-full"
+                    />
+                    <IoChevronDownOutline className="ml-2" />
+                  </div>
+
+                  {userPopupOpen && (
+                    <AnimatedPopup isHeader>
+                      <li className="py-1 text-center px-4 w-full transtion duration-300 hover:bg-gray-300 dark:hover:bg-gray-600">
+                        {user?.name ? user?.name : user?.email}
+                      </li>
+                      <li
+                        className="w-full text-center py-1 px-4 transtion duration-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        onClick={() => setSettingsModalOpen(!settingsModalOpen)}
+                      >
+                        Settings
+                      </li>
+                      <li className="w-full text-center transtion duration-300 hover:bg-gray-300 dark:hover:bg-gray-600">
+                        <button
+                          className="py-1 px-4"
+                          onClick={() => {
+                            router.push('/overview');
+                            signOut();
+                          }}
+                        >
+                          Sign out
+                        </button>
+                      </li>
+                    </AnimatedPopup>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center">
@@ -217,15 +261,26 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
         </div>
       </div>
       <Modal
-        isOpen={сreateProjectModalOpen}
-        onRequestClose={() => setCreateProjectModalOpen(false)}
-        className="pt-10 pb-6 px-8 max-w-lg w-full inset-y-24 bg-white rounded-lg"
-        overlayClassName="fixed inset-0 bg-black/5 flex items-center justify-center"
+        isOpen={сreateProjectModalOpen || settingsModalOpen}
+        onRequestClose={() => {
+          setCreateProjectModalOpen(false);
+          setSettingsModalOpen(false);
+        }}
+        className="pt-10 pb-6 px-8 max-w-lg w-full inset-y-24 bg-white rounded-lg dark:bg-gray-800 dark:text-white"
+        overlayClassName="fixed inset-0 bg-black/5 flex items-center justify-center dark:bg-black/20"
       >
-        <CreateProjectModal
-          setModalClose={setCreateProjectModalOpen}
-          handleProjectCreation={handleProjectCreation}
-        />
+        {сreateProjectModalOpen && !settingsModalOpen ? (
+          <CreateProjectModal
+            setModalClose={setCreateProjectModalOpen}
+            handleProjectCreation={handleProjectCreation}
+          />
+        ) : (
+          <div>
+            <div>
+              <h3>Theme</h3>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

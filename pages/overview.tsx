@@ -17,8 +17,10 @@ const Overview = () => {
           className="mb-2"
           alt="Preview image"
         />
-        <h2 className="text-gray-600">Start by creating a new project!</h2>
-        <h2 className="text-gray-600">
+        <h2 className="text-gray-600 dark:text-white">
+          Start by creating a new project!
+        </h2>
+        <h2 className="text-gray-600 dark:text-white">
           Or manage your todos in existing projects.
         </h2>
       </div>

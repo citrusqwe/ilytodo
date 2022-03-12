@@ -8,7 +8,7 @@ const ColorPickerInput = () => {
       <label htmlFor="color" className="mb-1">
         Name
       </label>
-      <div className="inline-flex items-center border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-blackd">
+      <div className="inline-flex items-center border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black dark:bg-gray-600 dark:border-gray-700">
         <input
           type="color"
           className="mr-2 appearance-none border-none w-auto h-auto cursor-pointer bg-none color-input"
@@ -17,7 +17,7 @@ const ColorPickerInput = () => {
         <input
           id="color"
           name="color"
-          className="border-none w-full text-xs outline-none py-2"
+          className="border-none w-full text-xs outline-none py-2 dark:bg-gray-600"
           value={field.value}
           disabled
         />

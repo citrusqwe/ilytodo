@@ -24,8 +24,8 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
         className={`flex items-center ${
           margin ? 'mb-6' : 'mb-2'
         } py-2 px-3 rounded-lg transition whitespace-nowrap overflow-hidden  duration-300 ${
-          currentId === id && isProject ? 'bg-gray-300' : ''
-        } hover:bg-gray-300`}
+          currentId === id && isProject ? 'bg-gray-300 dark:bg-gray-600' : ''
+        } hover:bg-gray-300 dark:hover:bg-gray-600`}
       >
         <li className="flex items-center overflow-hidden overflow-ellipsis w-11/12">
           <span className="mr-4">{icon}</span>

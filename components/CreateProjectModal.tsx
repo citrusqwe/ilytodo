@@ -28,7 +28,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-medium text-black">
+        <h2 className="font-medium">
           {isEdit ? 'Edit project' : 'Add project'}
         </h2>
       </div>
@@ -59,7 +59,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               <Field
                 id="firstName"
                 name="name"
-                className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black"
+                className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black dark:bg-gray-600 dark:border-gray-700"
               />
               {errors.name && touched.name ? (
                 <span className="text-red-500">{errors.name}</span>
@@ -80,7 +80,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="border border-gray-300 rounded-md p-2 mb-2 outline-none transtition duration-300 disabled:text-gray-300 hover:border-black focus:border-black"
+                className="border border-gray-300 rounded-md p-2 mb-2 outline-none transtition duration-300 disabled:text-gray-300 hover:border-black focus:border-black
+                dark:hover:border-gray-600  dark:disabled:border-gray-600 dark:disabled:text-gray-600"
                 disabled={isSubmitting || !isValid}
               >
                 {!isEdit ? 'Create' : 'Update'}

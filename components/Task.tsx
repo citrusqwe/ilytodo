@@ -8,6 +8,7 @@ import { Task } from '../pages/project/[id]';
 import { fb } from '../firebase/functions';
 import { Field, Form, Formik } from 'formik';
 import { TaskSchema } from '../schemas';
+import AnimatedPopup from './AnimatedPopup';
 
 interface TaskProps {
   task: Task;
@@ -35,7 +36,7 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
   return (
     <div
       key={task.id}
-      className="flex items-center mb-2 border-b border-gray-200 pb-1 group"
+      className="flex items-center mb-2 border-b border-gray-200 dark:border-gray-500 pb-1 group"
     >
       {!taskEditOpen ? (
         <>
@@ -64,37 +65,26 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
             </button>
           </div>
           {taskMenuOpen && (
-            <AnimatePresence exitBeforeEnter>
-              <motion.div
-                variants={{
-                  visible: { opacity: 1, transition: { duration: 0.2 } },
-                  hidden: { opacity: 0, transition: { duration: 0.2 } },
-                }}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="absolute z-[2000] bg-white w-[320px] translate-y-14 right-8 py-2 border border-gray-300 rounded-md shadow-md"
+            <AnimatedPopup isTask>
+              <div
+                className="flex items-center py-1 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
+                onClick={() => setTaskEditOpen(!taskEditOpen)}
               >
-                <div
-                  className="flex items-center py-1 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
-                  onClick={() => setTaskEditOpen(!taskEditOpen)}
-                >
-                  <span className="mr-2">
-                    <AiOutlineEdit />
-                  </span>
-                  Edit task
-                </div>
-                <div
-                  className="flex items-center py-1 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
-                  onClick={handleTaskDelete}
-                >
-                  <span className="mr-2">
-                    <AiOutlineDelete />
-                  </span>
-                  Delete task
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                <span className="mr-2">
+                  <AiOutlineEdit />
+                </span>
+                Edit task
+              </div>
+              <div
+                className="flex items-center py-1 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
+                onClick={handleTaskDelete}
+              >
+                <span className="mr-2">
+                  <AiOutlineDelete />
+                </span>
+                Delete task
+              </div>
+            </AnimatedPopup>
           )}
         </>
       ) : (
@@ -106,12 +96,12 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
             validationSchema={TaskSchema}
             onSubmit={(values) => handleTaskUpdate(values)}
           >
-            {({ errors, touched, isSubmitting }) => (
+            {({ errors, touched, isSubmitting, isValid }) => (
               <Form className="flex flex-col">
                 <Field
                   name="text"
                   as="textarea"
-                  className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black resize-none"
+                  className="border border-gray-300 bg-white dark:bg-gray-600 rounded-md p-2 mb-2 outline-none focus:border-black resize-none"
                   placeholder="Type something"
                 />
                 {errors.text && touched.text ? (
@@ -120,8 +110,8 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
                 <div className="flex">
                   <button
                     type="submit"
-                    className="mr-2 p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black"
-                    disabled={isSubmitting}
+                    className="mr-2 p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black dark:disabled:text-gray-600 dark:disabled:border-gray-600 dark:hover:border-gray-600"
+                    disabled={isSubmitting || !isValid}
                   >
                     Edit task
                   </button>

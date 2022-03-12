@@ -9,7 +9,6 @@ import {
 import { fb } from '../../firebase/functions';
 import Task from '../../components/Task';
 import { BiDotsHorizontalRounded } from 'react-icons/bi';
-import { AnimatePresence, motion } from 'framer-motion';
 import useOutsideClick from '../../hooks/useOutsideClick';
 import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 import Modal from 'react-modal';
@@ -22,6 +21,7 @@ import { getSession } from 'next-auth/react';
 import { TaskSchema } from '../../schemas';
 import StartSvg from '../../public/start_project.svg';
 import Image from 'next/image';
+import AnimatedPopup from '../../components/AnimatedPopup';
 
 export type Task = {
   completed: boolean;
@@ -143,61 +143,50 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
             <BiDotsHorizontalRounded className="w-7 h-7" />
           </button>
           {projectMenuOpen && (
-            <AnimatePresence exitBeforeEnter>
-              <motion.div
-                variants={{
-                  visible: { opacity: 1, transition: { duration: 0.2 } },
-                  hidden: { opacity: 0, transition: { duration: 0.2 } },
-                }}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="absolute z-[2000] bg-white w-[320px] right-0 py-2 border border-gray-300 rounded-md"
+            <AnimatedPopup>
+              <div
+                className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
+                onClick={() => setProjectModalOpen(!projectModalOpen)}
               >
-                <div
-                  className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
-                  onClick={() => setProjectModalOpen(!projectModalOpen)}
-                >
-                  <span className="mr-2">
-                    <AiOutlineEdit />
-                  </span>
-                  Edit project
-                </div>
-                <div
-                  className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
-                  onClick={() => setShowCompletedTask(!showCompletedTask)}
-                >
-                  {showCompletedTask ? (
-                    <>
-                      <span className="mr-2">
-                        <AiOutlineCloseCircle />
-                      </span>
-                      Hide completed tasks
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-2">
-                        <IoCheckmarkCircleOutline />
-                      </span>
-                      Show completed task
-                    </>
-                  )}
-                </div>
-                <div
-                  className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300"
-                  onClick={deleteProject}
-                >
-                  <span className="mr-2">
-                    <AiOutlineDelete />
-                  </span>
-                  Delete project
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                <span className="mr-2">
+                  <AiOutlineEdit />
+                </span>
+                Edit project
+              </div>
+              <div
+                className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
+                onClick={() => setShowCompletedTask(!showCompletedTask)}
+              >
+                {showCompletedTask ? (
+                  <>
+                    <span className="mr-2">
+                      <AiOutlineCloseCircle />
+                    </span>
+                    Hide completed tasks
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-2">
+                      <IoCheckmarkCircleOutline />
+                    </span>
+                    Show completed task
+                  </>
+                )}
+              </div>
+              <div
+                className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
+                onClick={deleteProject}
+              >
+                <span className="mr-2">
+                  <AiOutlineDelete />
+                </span>
+                Delete project
+              </div>
+            </AnimatedPopup>
           )}
         </div>
       </div>
-      <div className="mb-8 overflow-auto max-h-80 scroll">
+      <div className="mb-8 pr-2 overflow-auto max-h-80 scroll dark:scroll-dark">
         {tasksList?.map((task) => (
           <Task
             key={task.id}
@@ -216,12 +205,12 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
             validationSchema={TaskSchema}
             onSubmit={(values) => createTask(values)}
           >
-            {({ errors, touched, isSubmitting }) => (
+            {({ errors, touched, isSubmitting, isValid }) => (
               <Form className="flex flex-col">
                 <Field
                   name="text"
                   as="textarea"
-                  className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black resize-none"
+                  className="border border-gray-300 rounded-md p-2 mb-2 outline-none focus:border-black resize-none dark:bg-gray-600"
                   placeholder="Type something"
                 />
                 {errors.text && touched.text ? (
@@ -230,13 +219,13 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
                 <div className="flex">
                   <button
                     type="submit"
-                    className="mr-2 p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black"
-                    disabled={isSubmitting}
+                    className="mr-2 p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black  dark:hover:border-gray-600 dark:disabled:border-gray-600  dark:disabled:text-gray-600"
+                    disabled={isSubmitting || !isValid}
                   >
                     Add task
                   </button>
                   <button
-                    className=" p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black"
+                    className=" p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black dark:disabled:bg-gray-600 dark:hover:border-gray-600"
                     onClick={() => setCreateTaskOpen(false)}
                     disabled={isSubmitting}
                   >
@@ -249,7 +238,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
         </div>
       ) : (
         <button
-          className="flex items-center transition duration-300 mb-4 hover:text-black"
+          className="flex items-center transition duration-300 mb-4 hover:text-black dark:hover:text-gray-400"
           onClick={() => setCreateTaskOpen(!createTaskOpen)}
         >
           <span className="mr-2">
@@ -275,8 +264,8 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       <Modal
         isOpen={projectModalOpen}
         onRequestClose={() => setProjectModalOpen(false)}
-        className="pt-10 pb-6 px-8 max-w-lg w-full inset-y-24 bg-white rounded-lg"
-        overlayClassName="fixed inset-0 bg-black/5 flex items-center justify-center"
+        className="pt-10 pb-6 px-8 max-w-lg w-full inset-y-24 bg-white rounded-lg dark:text-white dark:bg-gray-800"
+        overlayClassName="fixed inset-0 bg-black/5 flex items-center justify-center dark:bg-black/20"
       >
         <CreateProjectModal
           currentProject={currentProject}

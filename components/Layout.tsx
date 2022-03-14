@@ -268,15 +268,16 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                       />
                     </span>
                     Projects
-                    <span
+                    <button
                       className="ml-auto p-2 cursor-pointer rounded-md transition duration-300 opacity-100 xl:opacity-0 xl:hover:bg-gray-300 xl:group-hover:opacity-100 dark:hover:bg-gray-600"
                       onClick={(e) => {
                         e.stopPropagation();
                         setCreateProjectModalOpen(true);
+                        handleCloseSidebar();
                       }}
                     >
                       <AiOutlinePlus />
-                    </span>
+                    </button>
                   </div>
 
                   <AnimatePresence initial={false}>

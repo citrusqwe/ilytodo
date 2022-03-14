@@ -242,7 +242,7 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
                 transition={{
                   duration: 0.3,
                 }}
-                className={`lg:w-56 w-48 lg:static lg:pr-4 px-4 dark:bg-gray-800 group absolute z-[3000] bg-white 
+                className={`lg:w-56 w-48 lg:static lg:pr-4 px-4 dark:bg-gray-800 group absolute z-[1999] bg-white 
                 h-[calc(100%-45px-32*2px)] md:h-[calc(100%-45px-32*3px-20px)]  rounded-b-md mb-2`}
               >
                 <ul>
@@ -334,7 +334,7 @@ const Layout: React.FC<LayoutProps> = ({ children, projects, user }) => {
           setSettingsModalOpen(false);
         }}
         className="pt-6 pb-4 px-6 sm:pt-10 sm:pb-6 z-[3000] sm:px-8 max-w-lg w-full inset-y-24 bg-white rounded-lg dark:bg-gray-800 dark:text-white"
-        overlayClassName="fixed px-2 sm:px-0 inset-0 bg-black/5 flex items-center justify-center dark:bg-black/20"
+        overlayClassName="fixed px-2 sm:px-0 inset-0 z-[2999] bg-black/5 flex items-center justify-center dark:bg-black/20"
       >
         {сreateProjectModalOpen && !settingsModalOpen ? (
           <CreateProjectModal

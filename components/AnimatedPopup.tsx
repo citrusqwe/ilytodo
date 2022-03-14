@@ -15,7 +15,7 @@ const AnimatedPopup: React.FC<AnimatedPopupProps> = ({
   const [styles, setStyles] = useState('');
   useEffect(() => {
     if (isHeader && !isTask)
-      setStyles('overflow-hidden w-36 -left-10 top-14 flex flex-col shadow-md');
+      setStyles('overflow-hidden w-36 -left-16 top-14 flex flex-col shadow-md');
     else if (isTask && !isHeader)
       setStyles('translate-y-14 right-8 w-[320px] shadow-md');
     else setStyles('w-[320px] right-0');

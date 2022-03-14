@@ -56,9 +56,12 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
             </div>
           </div>
           <p className="break">{task.text}</p>
-          <div className="ml-auto relative self-start" ref={taskMenuRef}>
+          <div
+            className="ml-auto relative self-start xl:opacity-0 transition duration-300 xl:group-hover:opacity-100 xl:focus:opacity-100"
+            ref={taskMenuRef}
+          >
             <button
-              className="p-1 opacity-0 transition duration-300 group-hover:opacity-100 focus:opacity-100"
+              className="p-1"
               onClick={() => setTaskMenuOpen(!taskMenuOpen)}
             >
               <BiDotsHorizontalRounded className="w-7 h-7" />

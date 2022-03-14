@@ -8,6 +8,7 @@ interface SidebarLinkProps {
   id?: string;
   isProject?: boolean;
   currentId?: string | string[];
+  handleCloseSidebar?: () => void;
 }
 
 const SidebarLink: React.FC<SidebarLinkProps> = ({
@@ -17,6 +18,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
   id,
   isProject,
   currentId,
+  handleCloseSidebar,
 }: any) => {
   return (
     <Link href={`/${isProject ? `project/${id}` : name.toLowerCase()}`}>
@@ -26,6 +28,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
         } py-2 px-3 rounded-lg transition whitespace-nowrap overflow-hidden  duration-300 ${
           currentId === id && isProject ? 'bg-gray-300 dark:bg-gray-600' : ''
         } hover:bg-gray-300 dark:hover:bg-gray-600`}
+        onClick={handleCloseSidebar}
       >
         <li className="flex items-center overflow-hidden overflow-ellipsis w-11/12">
           <span className="mr-4">{icon}</span>

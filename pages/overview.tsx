@@ -5,11 +5,11 @@ import OverviewSvg from '../public/overview.svg';
 
 const Overview = () => {
   return (
-    <div className="h-full w-full flex justify-center items-center ">
+    <div className="h-full w-full flex justify-center items-center">
       <Head>
         <title>Ilytodo</title>
       </Head>
-      <div className="text-center -translate-y-28">
+      <div className="text-center">
         <Image
           src={OverviewSvg.src}
           width={OverviewSvg.width}

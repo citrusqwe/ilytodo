@@ -22,6 +22,7 @@ import { TaskSchema } from '../../schemas';
 import StartSvg from '../../public/start_project.svg';
 import Image from 'next/image';
 import AnimatedPopup from '../../components/AnimatedPopup';
+import { AnimateSharedLayout, motion } from 'framer-motion';
 
 export type Task = {
   completed: boolean;
@@ -127,7 +128,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
   if (!currentProject) return <div>Error happend</div>;
 
   return (
-    <div>
+    <motion.div layout>
       <Head>
         <title>{currentProject?.name}</title>
       </Head>
@@ -197,7 +198,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
         ))}
       </div>
       {createTaskOpen ? (
-        <div className="mt-4 w-1/2">
+        <div className="mt-4 sm:w-1/2">
           <Formik
             initialValues={{
               text: '',
@@ -254,6 +255,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
             width={StartSvg.width}
             height={160}
             alt="Start image"
+            className="z-0"
           />
           <div className="text-center">
             <span className="block  mt-8">Organize your tasks</span>
@@ -274,7 +276,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
           isEdit
         />
       </Modal>
-    </div>
+    </motion.div>
   );
 };
 

@@ -7,13 +7,10 @@ import {
   AiOutlinePlus,
 } from 'react-icons/ai';
 import { fb } from '../../firebase/functions';
-import Task from '../../components/Task';
 import { BiDotsHorizontalRounded } from 'react-icons/bi';
-import useOutsideClick from '../../hooks/useOutsideClick';
 import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 import Modal from 'react-modal';
 import { Field, Form, Formik } from 'formik';
-import CreateProjectModal from '../../components/CreateProjectModal';
 import Head from 'next/head';
 import { Project } from '../../components/Layout';
 import { useRouter } from 'next/router';
@@ -21,8 +18,9 @@ import { getSession } from 'next-auth/react';
 import { TaskSchema } from '../../schemas';
 import StartSvg from '../../public/start_project.svg';
 import Image from 'next/image';
-import AnimatedPopup from '../../components/AnimatedPopup';
-import { AnimateSharedLayout, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { AnimatedPopup, CreateProjectModal, Task } from '../../components';
+import { useOutsideClick } from '../../hooks';
 
 export type Task = {
   completed: boolean;

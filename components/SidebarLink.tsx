@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { ReactElement } from 'react';
 
 interface SidebarLinkProps {
@@ -7,7 +8,6 @@ interface SidebarLinkProps {
   margin?: boolean;
   id?: string;
   isProject?: boolean;
-  currentId?: string | string[];
   handleCloseSidebar?: () => void;
 }
 
@@ -17,16 +17,19 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
   margin,
   id,
   isProject,
-  currentId,
   handleCloseSidebar,
 }: any) => {
+  const router = useRouter();
+
   return (
     <Link href={`/${isProject ? `project/${id}` : name.toLowerCase()}`}>
       <a
         className={`flex items-center ${
           margin ? 'mb-6' : 'mb-2'
         } py-2 px-3 rounded-lg transition whitespace-nowrap overflow-hidden  duration-300 ${
-          currentId === id && isProject ? 'bg-gray-300 dark:bg-gray-600' : ''
+          router.query.id === id && isProject
+            ? 'bg-gray-300 dark:bg-gray-600'
+            : ''
         } hover:bg-gray-300 dark:hover:bg-gray-600`}
         onClick={handleCloseSidebar}
       >

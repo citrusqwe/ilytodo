@@ -2,9 +2,9 @@ import '../styles/globals.css';
 import type { AppContext, AppProps } from 'next/app';
 import { getSession, SessionProvider } from 'next-auth/react';
 import Layout, { Project } from '../components/Layout';
-import { GetServerSideProps, NextPageContext } from 'next';
 import { fb } from '../firebase/functions';
 import App from 'next/app';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 interface TodoAppProps extends AppProps {
   projects: Project[];

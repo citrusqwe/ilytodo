@@ -76,7 +76,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({
               <Droppable droppableId="droppable">
                 {(provided: DroppableProvided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {projectsList.map((project: Project, index: number) => (
+                    {projectsList?.map((project: Project, index: number) => (
                       <Draggable
                         key={project.id}
                         draggableId={project.id}

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
-import { Project } from './Layout';
 import ColorPickerInput from './ColorPickerInput';
 import { ProjectSchema } from '../schemas';
+import { Project } from '../pages/_app';
 
 export type Color = {
   id: string;

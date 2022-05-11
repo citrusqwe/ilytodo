@@ -283,9 +283,9 @@ export async function getServerSideProps(ctx: NextPageContext) {
   try {
     const projectId = ctx.query.id as string;
     const [user, project, tasks] = await Promise.all([
-      await getSession(ctx),
-      await fb().getProject(projectId),
-      await fb().getProjectTasks(projectId),
+      getSession(ctx),
+      fb().getProject(projectId),
+      fb().getProjectTasks(projectId),
     ]);
 
     if (user?.id !== project.userId) {

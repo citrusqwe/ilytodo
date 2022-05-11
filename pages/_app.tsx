@@ -59,10 +59,8 @@ export default function TodoApp({
 }
 
 TodoApp.getInitialProps = async (appContext: AppContext) => {
-  const [appProps, session] = await Promise.all([
-    App.getInitialProps(appContext),
-    getSession(appContext.ctx),
-  ]);
+  const appProps = await App.getInitialProps(appContext);
+  const session = await getSession(appContext.ctx);
   const user = await fb().getUserByEmail(session?.user?.email as string);
   const projects = await fb().getAllProjects(user);
 

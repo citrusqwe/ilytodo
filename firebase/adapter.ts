@@ -143,12 +143,6 @@ export const FirebaseAdapter: Adapter<
     },
 
     async updateSession(data: any) {
-      // if (
-      //   !force &&
-      //   Number(session.expires) - sessionMaxAge + sessionUpdateAge > Date.now()
-      // :any) {
-      //   return null;
-      // }
       const q = query(
         collection(client, 'sessions'),
         where('sessionToken', '==', data.sessionToken),
@@ -188,29 +182,6 @@ export const FirebaseAdapter: Adapter<
       const snapshot = await getDoc(verificationRequestRef);
       return docSnapshotToObject(snapshot);
     },
-
-    // async getVerificationRequest(identifier, token:any) {
-    //   const q = query(
-    //     collection(client, 'verificationTokens'),
-    //     where('token', '==', hashToken(token)),
-    //     where('identifier', '==', identifier),
-    //     limit(1)
-    //   );
-    //   const snapshot = await getDocs(q);
-
-    //   const verificationRequest = querySnapshotToObject(snapshot);
-    //   if (!verificationRequest) return null;
-
-    //   if (verificationRequest.expires < new Date():any) {
-    //     await deleteDoc(
-    //       doc(client, 'verificationTokens', verificationRequest.id)
-    //     );
-
-    //     return null;
-    //   }
-    //   return verificationRequest;
-    // },
-
     async useVerificationToken({ identifier, token }: any) {
       const q = query(
         collection(client, 'verificationTokens'),

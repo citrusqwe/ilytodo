@@ -3,7 +3,6 @@ export { default as AnimatedPopup } from './AnimatedPopup';
 export { default as ColorPickerInput } from './ColorPickerInput';
 export { default as CreateProjectModal } from './CreateProjectModal';
 export { default as Layout } from './Layout';
-export { default as Select } from './Select';
 export { default as SidebarLink } from './SidebarLink';
 export { default as Task } from './Task';
 export { default as ProjectsList } from './ProjectsList';

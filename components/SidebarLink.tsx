@@ -8,7 +8,6 @@ interface SidebarLinkProps {
   margin?: boolean;
   id?: string;
   isProject?: boolean;
-  handleCloseSidebar?: () => void;
 }
 
 const SidebarLink: React.FC<SidebarLinkProps> = ({
@@ -17,7 +16,6 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
   margin,
   id,
   isProject,
-  handleCloseSidebar,
 }: any) => {
   const router = useRouter();
 
@@ -31,7 +29,6 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
             ? 'bg-gray-300 dark:bg-gray-600'
             : ''
         } hover:bg-gray-300 dark:hover:bg-gray-600`}
-        onClick={handleCloseSidebar}
       >
         <li className="flex items-center overflow-hidden overflow-ellipsis w-11/12">
           <span className="mr-4">{icon}</span>

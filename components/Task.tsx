@@ -21,7 +21,6 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
   const [taskComplete, setTaskComplete] = useState(task.completed);
   const taskMenuRef = useRef(null);
   useOutsideClick(taskMenuRef, () => setTaskMenuOpen(false));
-
   const handleTaskDelete = () => {
     deleteTask(task);
     setTaskMenuOpen(false);
@@ -32,11 +31,16 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
     setTaskEditOpen(false);
   };
 
+  const handleTaskComplete = () => {
+    setTaskComplete(!taskComplete);
+    updateTask(task, { completed: !taskComplete });
+  };
+
+  const handleTaskMenu = () => setTaskMenuOpen(!taskMenuOpen);
+  const handleTaskEdit = () => setTaskEditOpen(!taskEditOpen);
+
   return (
-    <div
-      key={task.id}
-      className="flex items-center mb-2 border-b border-gray-200 dark:border-gray-500 pb-1 group"
-    >
+    <div className="flex items-center mb-2 border-b border-gray-200 dark:border-gray-500 pb-1 group">
       {!taskEditOpen ? (
         <>
           <div>
@@ -44,10 +48,7 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
               className={`w-4 h-4 mr-4 border border-gray-500 rounded-full flex items-center justify-center ${
                 taskComplete ? 'bg-gray-500' : ''
               } cursor-pointer`}
-              onClick={() => {
-                setTaskComplete(!taskComplete);
-                updateTask(task, { completed: !taskComplete });
-              }}
+              onClick={handleTaskComplete}
             >
               {taskComplete && (
                 <IoCheckmark className="w-[10px] h-[10px]  stroke-white" />
@@ -59,10 +60,7 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
             className="ml-auto relative self-start xl:opacity-0 transition duration-300 xl:group-hover:opacity-100 xl:focus:opacity-100"
             ref={taskMenuRef}
           >
-            <button
-              className="p-1"
-              onClick={() => setTaskMenuOpen(!taskMenuOpen)}
-            >
+            <button className="p-1" onClick={handleTaskMenu}>
               <BiDotsHorizontalRounded className="w-7 h-7" />
             </button>
           </div>
@@ -70,7 +68,7 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
             <AnimatedPopup isTask>
               <div
                 className="flex items-center py-1 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
-                onClick={() => setTaskEditOpen(!taskEditOpen)}
+                onClick={handleTaskEdit}
               >
                 <span className="mr-2">
                   <AiOutlineEdit />
@@ -120,7 +118,7 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
                   <button
                     className=" p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black"
                     disabled={isSubmitting}
-                    onClick={() => setTaskEditOpen(false)}
+                    onClick={handleTaskEdit}
                   >
                     Cancel
                   </button>
@@ -134,4 +132,4 @@ const Task: React.FC<TaskProps> = ({ task, deleteTask, updateTask }) => {
   );
 };
 
-export default Task;
+export default React.memo(Task);

@@ -1,11 +1,7 @@
 import type { NextPage, NextPageContext } from 'next';
-import { useState } from 'react';
 import Head from 'next/head';
-import { getSession } from 'next-auth/react';
 
-const Home: NextPage = ({ session }: any) => {
-  const [projectsListOpen, setProjectsListOpen] = useState(true);
-
+const Home: NextPage = () => {
   return (
     <>
       <Head>
@@ -16,15 +12,4 @@ const Home: NextPage = ({ session }: any) => {
     </>
   );
 };
-
-export async function getServerSideProps(ctx: NextPageContext) {
-  const session = await getSession(ctx);
-
-  return {
-    props: {
-      session,
-    },
-  };
-}
-
 export default Home;

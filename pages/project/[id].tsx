@@ -12,7 +12,6 @@ import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 import Modal from 'react-modal';
 import { Field, Form, Formik } from 'formik';
 import Head from 'next/head';
-import { Project } from '../../components/Layout';
 import { useRouter } from 'next/router';
 import { getSession } from 'next-auth/react';
 import { TaskSchema } from '../../schemas';
@@ -70,7 +69,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       setTasksList([createdTask, ...tasksList]);
       setCreateTaskOpen(false);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   };
 
@@ -80,7 +79,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       setCurrentProject({ ...updatedProject, ...data });
       setProjectModalOpen(false);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   };
 
@@ -89,7 +88,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       router.push('/overview');
       const deletedProject = await fb().deleteProject(currentProject);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   };
 
@@ -99,7 +98,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       const updatedTaskList = tasksList.filter((t) => t.id !== deletedTask.id);
       setTasksList(updatedTaskList);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   };
 
@@ -112,7 +111,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       });
       setTasksList([...tasksList]);
     } catch (error) {
-      console.log('update error', error);
+      throw error;
     }
   };
 
@@ -122,6 +121,11 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
     );
     setTasksList(filteredTasks);
   }, [showCompletedTask]);
+
+  const handleProjectMenu = () => setProjectMenuOpen(!projectMenuOpen);
+  const handleProjectModal = () => setProjectModalOpen(!projectModalOpen);
+  const handleShowCompleted = () => setShowCompletedTask(!showCompletedTask);
+  const handleCreateTask = () => setCreateTaskOpen(!createTaskOpen);
 
   if (!currentProject) return <div>Error happend</div>;
 
@@ -135,17 +139,14 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
           {currentProject?.name}
         </h3>
         <div className="relative self-start" ref={projectMenuRef}>
-          <button
-            className="p-1"
-            onClick={() => setProjectMenuOpen(!projectMenuOpen)}
-          >
+          <button className="p-1" onClick={handleProjectMenu}>
             <BiDotsHorizontalRounded className="w-7 h-7" />
           </button>
           {projectMenuOpen && (
             <AnimatedPopup>
               <div
                 className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
-                onClick={() => setProjectModalOpen(!projectModalOpen)}
+                onClick={handleProjectModal}
               >
                 <span className="mr-2">
                   <AiOutlineEdit />
@@ -154,7 +155,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
               </div>
               <div
                 className="flex items-center py-2 px-4 transition duration-300 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
-                onClick={() => setShowCompletedTask(!showCompletedTask)}
+                onClick={handleShowCompleted}
               >
                 {showCompletedTask ? (
                   <>
@@ -225,7 +226,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
                   </button>
                   <button
                     className=" p-2 border border-gray-300 rounded-md transition duration-300 hover:border-black disabled:text-gray-300 focus:border-black dark:disabled:bg-gray-600 dark:hover:border-gray-600"
-                    onClick={() => setCreateTaskOpen(false)}
+                    onClick={handleCreateTask}
                     disabled={isSubmitting}
                   >
                     Cancel
@@ -238,7 +239,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       ) : (
         <button
           className="flex items-center transition duration-300 mb-4 hover:text-black dark:hover:text-gray-400"
-          onClick={() => setCreateTaskOpen(!createTaskOpen)}
+          onClick={handleCreateTask}
         >
           <span className="mr-2">
             <AiOutlinePlus />
@@ -263,7 +264,7 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
       )}
       <Modal
         isOpen={projectModalOpen}
-        onRequestClose={() => setProjectModalOpen(false)}
+        onRequestClose={handleProjectMenu}
         className="pt-10 pb-6 px-8 max-w-lg w-full inset-y-24 bg-white rounded-lg dark:text-white dark:bg-gray-800"
         overlayClassName="fixed inset-0 bg-black/5 flex items-center justify-center dark:bg-black/20"
       >
@@ -280,10 +281,12 @@ const Project: NextPage<ProjectProps> = ({ project, tasks }) => {
 
 export async function getServerSideProps(ctx: NextPageContext) {
   try {
-    const user = await getSession(ctx);
     const projectId = ctx.query.id as string;
-    const project = await fb().getProject(projectId);
-    const tasks = await fb().getProjectTasks(projectId);
+    const [user, project, tasks] = await Promise.all([
+      await getSession(ctx),
+      await fb().getProject(projectId),
+      await fb().getProjectTasks(projectId),
+    ]);
 
     if (user?.id !== project.userId) {
       return {
@@ -306,4 +309,4 @@ export async function getServerSideProps(ctx: NextPageContext) {
   }
 }
 
-export default Project;
+export default React.memo(Project);

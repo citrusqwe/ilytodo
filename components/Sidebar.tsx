@@ -6,15 +6,10 @@ import SidebarLink from './SidebarLink';
 
 interface SidebarProps {
   size: DOMRectReadOnly;
-  handleCloseSidebar: () => void;
   children: React.ReactNode;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  size,
-  handleCloseSidebar,
-  children,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ size, children }) => {
   return (
     <motion.div
       key="content"
@@ -37,7 +32,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           icon={
             <AiOutlineHome className="stroke-gray-theme dark:stroke-white" />
           }
-          handleCloseSidebar={handleCloseSidebar}
           margin
         />
       </ul>
@@ -46,4 +40,4 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-export default Sidebar;
+export default React.memo(Sidebar);

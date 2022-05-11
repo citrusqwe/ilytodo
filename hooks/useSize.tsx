@@ -5,12 +5,16 @@ const useSize = (target: any) => {
   const [size, setSize] = React.useState<DOMRectReadOnly>(
     {} as DOMRectReadOnly
   );
+  const [open, setOpen] = React.useState(true);
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     setSize(target.current.offsetWidth);
   }, [target]);
 
   useResizeObserver(target, (entry) => setSize(entry.contentRect));
-  return size;
+
+  const isOverlay = (() => size?.width + size?.y * 2 < 1024)();
+
+  return { isOverlay, size };
 };
 export default useSize;

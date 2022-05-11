@@ -22,23 +22,25 @@ import {
 } from './utils';
 
 export const fb = () => ({
-  async getColors() {
-    const docs = await getDocs(collection(db, 'colors'));
-
-    return querySnapshotsToObject(docs);
-  },
   async getUserByEmail(email: string) {
     if (!email) return null;
 
-    const q = query(collection(db, 'users'), where('email', '==', email));
+    try {
+      const q = query(collection(db, 'users'), where('email', '==', email));
 
-    const docsSnap = await getDocs(q);
-    return querySnapshotToObject(docsSnap);
+      const docsSnap = await getDocs(q);
+      return querySnapshotToObject(docsSnap);
+    } catch (error) {
+      return null;
+    }
   },
   async getAllTasks() {
-    const docs = await getDocs(collection(db, 'tasks'));
-
-    return querySnapshotsToObject(docs);
+    try {
+      const docs = await getDocs(collection(db, 'tasks'));
+      return querySnapshotsToObject(docs);
+    } catch (error) {
+      return null;
+    }
   },
   async getAllProjects(user: any) {
     if (!user) return null;
@@ -78,75 +80,107 @@ export const fb = () => ({
     }
   },
   async getProject(id: string) {
-    const projectSnap = await getDoc(doc(db, 'projects', id));
-    return docSnapshotToObject(projectSnap);
+    try {
+      const projectSnap = await getDoc(doc(db, 'projects', id));
+      return docSnapshotToObject(projectSnap);
+    } catch (error) {
+      return null;
+    }
   },
   async createProject(project: any, user: any) {
-    const collectionRef = collection(db, 'projects');
-    const docRef = doc(collectionRef);
+    try {
+      const collectionRef = collection(db, 'projects');
+      const docRef = doc(collectionRef);
 
-    await setDoc(docRef, {
-      ...project,
-      id: docRef.id,
-      userId: user.id,
-      timestamp,
-    });
+      await setDoc(docRef, {
+        ...project,
+        id: docRef.id,
+        userId: user.id,
+        timestamp,
+      });
 
-    const createdProject = await getDoc(docRef);
-    return createdProject.data();
+      const createdProject = await getDoc(docRef);
+      return createdProject.data();
+    } catch (error) {
+      return null;
+    }
   },
   async updateProject(project: any, field: any) {
-    await updateDoc(
-      doc(db, 'projects', project.id),
-      Object.fromEntries(Object.entries(field))
-    );
+    try {
+      await updateDoc(
+        doc(db, 'projects', project.id),
+        Object.fromEntries(Object.entries(field))
+      );
 
-    return project;
+      return project;
+    } catch (error) {
+      return error;
+    }
   },
   async deleteProject(project: any) {
-    await deleteDoc(doc(db, 'projects', project.id));
-    const q = query(
-      collection(db, 'tasks'),
-      where('projectId', '==', project.id)
-    );
-    const projectTasks = await getDocs(q);
+    try {
+      await deleteDoc(doc(db, 'projects', project.id));
+      const q = query(
+        collection(db, 'tasks'),
+        where('projectId', '==', project.id)
+      );
+      const projectTasks = await getDocs(q);
 
-    projectTasks.docs.forEach(
-      async (d) => await deleteDoc(doc(db, 'tasks', d.id))
-    );
+      projectTasks.docs.forEach(
+        async (d) => await deleteDoc(doc(db, 'tasks', d.id))
+      );
 
-    return project;
+      return project;
+    } catch (error) {
+      return null;
+    }
   },
   async createTask(task: any) {
-    const taskRef = await addDoc(collection(db, 'tasks'), {
-      ...task,
-      timestamp,
-    });
-    const taskSnap = await getDoc(taskRef);
-    return docSnapshotToObject(taskSnap);
+    try {
+      const taskRef = await addDoc(collection(db, 'tasks'), {
+        ...task,
+        timestamp,
+      });
+      const taskSnap = await getDoc(taskRef);
+      return docSnapshotToObject(taskSnap);
+    } catch (error) {
+      return null;
+    }
   },
   async updateTask(task: any, field: any) {
-    await updateDoc(
-      doc(db, 'tasks', task.id),
-      Object.fromEntries(Object.entries(field))
-    );
+    try {
+      await updateDoc(
+        doc(db, 'tasks', task.id),
+        Object.fromEntries(Object.entries(field))
+      );
 
-    return task;
+      return task;
+    } catch (error) {
+      return null;
+    }
   },
   async deleteTask(task: any) {
-    await deleteDoc(doc(db, 'tasks', task.id));
+    try {
+      await deleteDoc(doc(db, 'tasks', task.id));
 
-    return task;
+      return task;
+    } catch (error) {
+      return null;
+    }
   },
   async getProjectTasks(id: string, order: OrderByDirection = 'desc') {
-    const q = query(
-      collection(db, 'tasks'),
-      where('projectId', '==', id),
-      orderBy('timestamp', order)
-    );
-    const tasksSnap = await getDocs(q);
-    const res = querySnapshotsToObject(tasksSnap);
-    if (!res) return [];
-    return querySnapshotsToObject(tasksSnap);
+    try {
+      const q = query(
+        collection(db, 'tasks'),
+        where('projectId', '==', id),
+        orderBy('timestamp', order)
+      );
+      const tasksSnap = await getDocs(q);
+      const res = querySnapshotsToObject(tasksSnap);
+      if (!res) return [];
+      return querySnapshotsToObject(tasksSnap);
+    } catch (error) {
+      return [];
+    }
   },
 });

@@ -6,13 +6,11 @@ export async function middleware(req: any) {
     return NextResponse.redirect(new URL('/overview', req.url));
   }
   if (req.nextUrl.pathname === '/overview') {
-    const token = await getToken({
-      req,
-      secret: process.env.NEXTAUTH_SECRET,
-      raw: true,
-    });
+    const isTokenExist = !Object.keys(req.cookies).find((s) =>
+      s.includes('session-token')
+    );
 
-    if (!token)
+    if (isTokenExist)
       return NextResponse.redirect(new URL('/api/auth/signin', req.url));
   }
 }
